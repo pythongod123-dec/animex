@@ -8,21 +8,62 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        body { font-family: 'Inter', sans-serif; transition: background-color 0.5s, color 0.5s; }
-        .chat-container { overflow-y: auto; scroll-behavior: smooth; }
-        .chat-bubble { max-width: 80%; border-radius: 1.5rem; padding: 0.75rem 1.25rem; margin-bottom: 0.5rem; word-wrap: break-word; animation: fadeIn 0.3s ease-in-out; }
-        .user-bubble { background-color: #f87171; color: white; align-self: flex-end; border-bottom-right-radius: 0.5rem; }
-        .ai-bubble { background-color: #f3e8ff; color: #4c1d95; align-self: flex-start; border-bottom-left-radius: 0.5rem; }
-        .loading-dots span { animation: bounce 1s infinite; }
-        .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
-        .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes bounce { 0%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-0.75rem); } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.5s, color 0.5s;
+        }
+        .chat-container {
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+        .chat-bubble {
+            max-width: 80%;
+            border-radius: 1.5rem;
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 0.5rem;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .user-bubble {
+            background-color: #f87171; /* Red-500 */
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 0.5rem;
+        }
+        .ai-bubble {
+            background-color: #f3e8ff; /* Purple-100 */
+            color: #4c1d95; /* Purple-900 */
+            align-self: flex-start;
+            border-bottom-left-radius: 0.5rem;
+        }
+        .loading-dots span {
+            animation: bounce 1s infinite;
+        }
+        .loading-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .loading-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        @keyframes bounce {
+            0%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-0.75rem); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .log-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1rem;
+        }
     </style>
 </head>
 <body class="text-gray-800 dark:text-gray-200">
 
     <div id="app" class="min-h-screen flex flex-col items-center justify-center p-4">
+
         <header class="w-full max-w-4xl flex justify-center items-center py-4 mb-8 relative">
             <h1 class="text-4xl font-extrabold text-white animate-pulse">AI Anime Chat</h1>
             <button id="themeToggle" class="absolute right-0 top-1/2 -translate-y-1/2 p-2 rounded-full text-white bg-gray-800 dark:bg-gray-200 dark:text-gray-800 transition-colors duration-300">
@@ -30,16 +71,133 @@
             </button>
         </header>
 
-        <main id="content" class="w-full max-w-4xl p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 transition-colors duration-300 flex flex-col"></main>
+        <main id="content" class="w-full max-w-4xl p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 transition-colors duration-300 flex flex-col">
+            </main>
     </div>
+
+    <div id="messageBox" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg w-full max-w-sm">
+            <p id="messageBoxText" class="text-center font-medium mb-4"></p>
+            <button id="closeMessageBoxBtn" class="w-full py-2 bg-blue-500 text-white rounded-full font-bold hover:bg-blue-600 transition-colors">Close</button>
+        </div>
+    </div>
+
+    <div id="adminLoginModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-md animate-fade-in-up">
+            <h3 class="text-2xl font-bold text-center mb-6 text-gray-900 dark:text-gray-100">Admin Login</h3>
+            <form id="adminModalForm" class="space-y-4">
+                <input type="password" id="adminModalPass" placeholder="Enter Admin Password" class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm p-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100" required>
+                <div class="flex space-x-4">
+                    <button type="submit" class="flex-1 py-3 px-4 rounded-full font-semibold transition-transform transform hover:scale-105 bg-purple-600 text-white hover:bg-purple-700 shadow-md">Log In</button>
+                    <button type="button" id="closeAdminModalBtn" class="flex-1 py-3 px-4 rounded-full font-semibold transition-transform transform hover:scale-105 bg-gray-300 text-gray-800 hover:bg-gray-400 shadow-md">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="chatHistoryModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100" id="chatHistoryTitle"></h3>
+                <button id="closeChatHistoryBtn" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-transform transform hover:scale-110">
+                    <i class="fas fa-times fa-lg"></i>
+                </button>
+            </div>
+            <div id="chatHistoryContent" class="flex-1 overflow-y-auto space-y-4 mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl shadow-inner">
+                </div>
+        </div>
+    </div>
+
+    <div id="logDetailsModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-xl max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Log Details</h3>
+                <button id="closeLogDetailsBtn" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-transform transform hover:scale-110">
+                    <i class="fas fa-times fa-lg"></i>
+                </button>
+            </div>
+            <div id="logDetailsContent" class="flex-1 overflow-y-auto space-y-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl shadow-inner text-sm">
+                </div>
+        </div>
+    </div>
+
+    <div id="editUserModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-md animate-fade-in-up">
+            <h3 class="text-2xl font-bold text-center mb-6 text-gray-900 dark:text-gray-100">Edit User Password</h3>
+            <form id="editUserForm" class="space-y-4">
+                <p id="editUserUsername" class="text-center font-semibold text-xl text-purple-600 dark:text-purple-400"></p>
+                <input type="password" id="editUserPassword" placeholder="Enter new password" class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm p-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100" required>
+                <div class="flex space-x-4">
+                    <button type="submit" class="flex-1 py-3 px-4 rounded-full font-semibold transition-transform transform hover:scale-105 bg-blue-600 text-white hover:bg-blue-700 shadow-md">Save Changes</button>
+                    <button type="button" id="closeEditUserModalBtn" class="flex-1 py-3 px-4 rounded-full font-semibold transition-transform transform hover:scale-105 bg-gray-300 text-gray-800 hover:bg-gray-400 shadow-md">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="suspendUserModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-md animate-fade-in-up">
+            <h3 class="text-2xl font-bold text-center mb-6 text-gray-900 dark:text-gray-100">Suspend User</h3>
+            <p id="suspendUserUsername" class="text-center font-semibold text-xl text-purple-600 dark:text-purple-400"></p>
+            <form id="suspendUserForm" class="space-y-4 mt-4">
+                <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                    <div class="flex-1">
+                        <label for="suspendDuration" class="sr-only">Duration</label>
+                        <input type="number" id="suspendDuration" class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm p-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100" placeholder="Duration" min="1" required>
+                    </div>
+                    <div class="flex-1">
+                        <label for="suspendUnit" class="sr-only">Unit</label>
+                        <select id="suspendUnit" class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm p-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100" required>
+                            <option value="seconds">Seconds</option>
+                            <option value="hours">Hours</option>
+                            <option value="days">Days</option>
+                            <option value="weeks">Weeks</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex space-x-4">
+                    <button type="submit" class="flex-1 py-3 px-4 rounded-full font-semibold transition-transform transform hover:scale-105 bg-red-600 text-white hover:bg-red-700 shadow-md">Suspend</button>
+                    <button type="button" id="closeSuspendUserModalBtn" class="flex-1 py-3 px-4 rounded-full font-semibold transition-transform transform hover:scale-105 bg-gray-300 text-gray-800 hover:bg-gray-400 shadow-md">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="liveChatModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-xl max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Live Chat</h3>
+                <button id="closeLiveChatModalBtn" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-transform transform hover:scale-110">
+                    <i class="fas fa-times fa-lg"></i>
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto space-y-4 mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl shadow-inner">
+                <div id="chatUsersList" class="space-y-2">
+                    </div>
+                <div id="chatMessageContainer" class="hidden">
+                    <h4 id="chattingWith" class="text-lg font-bold mb-4"></h4>
+                    <div id="liveChatMessages" class="h-64 overflow-y-auto bg-gray-200 dark:bg-gray-800 p-4 rounded-lg space-y-2">
+                        </div>
+                    <form id="liveChatForm" class="flex mt-4 space-x-2">
+                        <input type="text" id="liveChatInput" class="flex-1 p-3 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Type a message...">
+                        <button type="submit" class="px-6 py-3 rounded-full font-semibold transition-transform transform hover:scale-105 bg-purple-600 text-white hover:bg-purple-700 shadow-md">Send</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            let loggedInUser = null;
-            let customPrompt = '';
-            const apiKey = "YOUR_GEMINI_API_KEY"; // replace with your real Gemini key
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
+            // Global State
+            let loggedInUser = null;
+            let userToEdit = null;
+            let userToSuspend = null;
+            let currentLiveChatUser = null;
+            let customPrompt = '';
+            const adminPassword = 'admin1';
             const characters = [
                 { id: 'gojo', name: 'Gojo Satoru', anime: 'Jujutsu Kaisen', imgUrl: 'https://i.ibb.co/GfCtcWJP/gojo-img.jpg' },
                 { id: 'kafka', name: 'Kafka Hibino', anime: 'Kaiju No. 8', imgUrl: 'https://i.ibb.co/tT27T3HN/kaiju-no8-img.webp' },
@@ -48,72 +206,587 @@
                 { id: 'l', name: 'L', anime: 'Death Note', imgUrl: 'https://i.ibb.co/TM1F0690/l.jpg' },
                 { id: 'jeremmy', name: 'Jeremy', anime: 'General AI', imgUrl: 'https://i.ibb.co/wZnn5JFS/jeremy.jpg' }
             ];
-
+            
+            // DOM Elements
             const content = document.getElementById('content');
+            const messageBox = document.getElementById('messageBox');
+            const messageBoxText = document.getElementById('messageBoxText');
+            const closeMessageBoxBtn = document.getElementById('closeMessageBoxBtn');
+            const adminLoginModal = document.getElementById('adminLoginModal');
+            const closeAdminModalBtn = document.getElementById('closeAdminModalBtn');
+            const adminModalForm = document.getElementById('adminModalForm');
+            const chatHistoryModal = document.getElementById('chatHistoryModal');
+            const chatHistoryTitle = document.getElementById('chatHistoryTitle');
+            const chatHistoryContent = document.getElementById('chatHistoryContent');
+            const closeChatHistoryBtn = document.getElementById('closeChatHistoryBtn');
+            const themeToggleBtn = document.getElementById('themeToggle');
+            const themeIcon = document.getElementById('themeIcon');
+            const html = document.documentElement;
+            const logDetailsModal = document.getElementById('logDetailsModal');
+            const logDetailsContent = document.getElementById('logDetailsContent');
+            const closeLogDetailsBtn = document.getElementById('closeLogDetailsBtn');
+            const editUserModal = document.getElementById('editUserModal');
+            const closeEditUserModalBtn = document.getElementById('closeEditUserModalBtn');
+            const editUserForm = document.getElementById('editUserForm');
+            const editUserUsernameDisplay = document.getElementById('editUserUsername');
+            const editUserPasswordInput = document.getElementById('editUserPassword');
+            const suspendUserModal = document.getElementById('suspendUserModal');
+            const suspendUserUsernameDisplay = document.getElementById('suspendUserUsername');
+            const suspendUserForm = document.getElementById('suspendUserForm');
+            const closeSuspendUserModalBtn = document.getElementById('closeSuspendUserModalBtn');
+            const liveChatModal = document.getElementById('liveChatModal');
+            const closeLiveChatModalBtn = document.getElementById('closeLiveChatModalBtn');
+            const chatUsersList = document.getElementById('chatUsersList');
+            const chatMessageContainer = document.getElementById('chatMessageContainer');
+            const chattingWith = document.getElementById('chattingWith');
+            const liveChatMessages = document.getElementById('liveChatMessages');
+            const liveChatForm = document.getElementById('liveChatForm');
+            const liveChatInput = document.getElementById('liveChatInput');
+            const aiEmojis = [
+                '😊', '✨', '🔥', '🚀', '🌟', '🤣', '💖', '🤯', '😎', '😜', '👍',
+                '🎉', '😂', '🤩', '🥳', '🙌', '💯', '👏', '😁', '🤗', '🥳', '🌈',
+                '💡', '🤔', '💬', '👀', '💫', '💥', '🧡', '💜', '💙', '💚', '💛',
+                '🍎', '🍓', '🍕', '🍩', '🍦', '🍜', '🍣', '🍰', '🍪', '🍔', '🍟',
+                '🌸', '☀️', '☔', '❄️', '🌊', '🌲', '⛰️', '🏖️', '🌃', '🌉', '🌌',
+                '🐱', '🐶', '🐼', '🐰', '🦊', '🐻', '🐯', '🦁'
+            ];
+
+            // --- Utility Functions ---
+            function showMessageBox(message) {
+                messageBoxText.textContent = message;
+                messageBox.classList.remove('hidden');
+            }
+
+            function hideMessageBox() {
+                messageBox.classList.add('hidden');
+            }
+            closeMessageBoxBtn.addEventListener('click', hideMessageBox);
+
+            function showAdminLoginModal() {
+                adminLoginModal.classList.remove('hidden');
+            }
+
+            function hideAdminLoginModal() {
+                adminLoginModal.classList.add('hidden');
+            }
+            closeAdminModalBtn.addEventListener('click', hideAdminLoginModal);
+
+            function showChatHistoryModal(title, contentHtml) {
+                chatHistoryTitle.textContent = title;
+                chatHistoryContent.innerHTML = contentHtml;
+                chatHistoryModal.classList.remove('hidden');
+            }
+
+            function hideChatHistoryModal() {
+                chatHistoryModal.classList.add('hidden');
+            }
+            closeChatHistoryBtn.addEventListener('click', hideChatHistoryModal);
+            
+            function showLogDetailsModal(log) {
+                logDetailsContent.innerHTML = `
+                    <div class="space-y-2">
+                        <p><span class="font-bold">Timestamp:</span> ${new Date(log.timestamp).toLocaleString()}</p>
+                        <p><span class="font-bold">User:</span> ${log.user}</p>
+                        <p><span class="font-bold">Action:</span> ${log.action}</p>
+                        ${log.data.question ? `<p><span class="font-bold">Question:</span> ${log.data.question}</p>` : ''}
+                        ${log.data.answer ? `<p><span class="font-bold">Answer:</span> ${log.data.answer}</p>` : ''}
+                    </div>
+                `;
+                logDetailsModal.classList.remove('hidden');
+            }
+
+            function hideLogDetailsModal() {
+                logDetailsModal.classList.add('hidden');
+            }
+            closeLogDetailsBtn.addEventListener('click', hideLogDetailsModal);
+
+            function showEditUserModal(username) {
+                userToEdit = username;
+                editUserUsernameDisplay.textContent = username;
+                editUserModal.classList.remove('hidden');
+            }
+
+            function hideEditUserModal() {
+                editUserModal.classList.add('hidden');
+                editUserPasswordInput.value = '';
+                userToEdit = null;
+            }
+            closeEditUserModalBtn.addEventListener('click', hideEditUserModal);
+            
+            function showSuspendUserModal(username) {
+                userToSuspend = username;
+                suspendUserUsernameDisplay.textContent = username;
+                suspendUserModal.classList.remove('hidden');
+            }
+
+            function hideSuspendUserModal() {
+                suspendUserModal.classList.add('hidden');
+                userToSuspend = null;
+            }
+            closeSuspendUserModalBtn.addEventListener('click', hideSuspendUserModal);
+
+            function showLiveChatModal() {
+                liveChatModal.classList.remove('hidden');
+                renderLiveChatUsers();
+            }
+
+            function hideLiveChatModal() {
+                liveChatModal.classList.add('hidden');
+                chatMessageContainer.classList.add('hidden');
+                chatUsersList.classList.remove('hidden');
+            }
+            closeLiveChatModalBtn.addEventListener('click', hideLiveChatModal);
+
+            function toggleDarkMode() {
+                if (html.classList.contains('dark')) {
+                    html.classList.remove('dark');
+                    themeIcon.classList.remove('fa-sun');
+                    themeIcon.classList.add('fa-moon');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    html.classList.add('dark');
+                    themeIcon.classList.remove('fa-moon');
+                    themeIcon.classList.add('fa-sun');
+                    localStorage.setItem('theme', 'dark');
+                }
+            }
+            themeToggleBtn.addEventListener('click', toggleDarkMode);
+
+            function logAction(action, data = {}) {
+                const logs = JSON.parse(localStorage.getItem('adminLogs') || '[]');
+                logs.push({
+                    timestamp: new Date().toISOString(),
+                    user: loggedInUser ? loggedInUser.username : 'Guest',
+                    action: action,
+                    data: data
+                });
+                localStorage.setItem('adminLogs', JSON.stringify(logs));
+            }
+
+            function saveUser(user) {
+                const users = JSON.parse(localStorage.getItem('users') || '{}');
+                users[user.username] = user;
+                localStorage.setItem('users', JSON.stringify(users));
+            }
+
+            function getUser(username) {
+                const users = JSON.parse(localStorage.getItem('users') || '{}');
+                return users[username];
+            }
+
+            function banUser(username) {
+                const user = getUser(username);
+                if (user) {
+                    user.isBanned = true;
+                    saveUser(user);
+                    showMessageBox(`${username} has been banned.`);
+                    renderAdminDashboard();
+                }
+            }
+            
+            function suspendUser(username, duration, unit) {
+                const user = getUser(username);
+                if (user) {
+                    let durationInMs;
+                    switch (unit) {
+                        case 'seconds': durationInMs = duration * 1000; break;
+                        case 'minutes': durationInMs = duration * 60 * 1000; break;
+                        case 'hours': durationInMs = duration * 60 * 60 * 1000; break;
+                        case 'days': durationInMs = duration * 24 * 60 * 60 * 1000; break;
+                        case 'weeks': durationInMs = duration * 7 * 24 * 60 * 60 * 1000; break;
+                    }
+                    user.isBanned = true;
+                    user.suspensionEndTime = Date.now() + durationInMs;
+                    saveUser(user);
+                    logAction(`Admin suspended user`, { user: username, duration, unit });
+                    showMessageBox(`${username} has been suspended for ${duration} ${unit}.`);
+                    renderAdminDashboard();
+                }
+            }
+
+            function unbanUser(username) {
+                const user = getUser(username);
+                if (user) {
+                    user.isBanned = false;
+                    user.suspensionEndTime = null;
+                    saveUser(user);
+                    showMessageBox(`${username} has been unbanned.`);
+                    renderAdminDashboard();
+                }
+            }
+
+            function checkAndSetAchievements() {
+                if (!loggedInUser.achievements) {
+                    loggedInUser.achievements = {};
+                }
+                
+                // Achievement 1: First chat
+                if (!loggedInUser.achievements.firstChat && loggedInUser.messagesSent > 0) {
+                    loggedInUser.achievements.firstChat = true;
+                    showMessageBox("Achievement Unlocked: First Chat! 🎉");
+                    saveUser(loggedInUser);
+                }
+
+                // Achievement 2: Chat with all characters
+                if (!loggedInUser.achievements.allCharacters && Object.keys(loggedInUser.chats).length === characters.length) {
+                    loggedInUser.achievements.allCharacters = true;
+                    showMessageBox("Achievement Unlocked: Master of Anime! 🌟 You've chatted with all characters.");
+                    saveUser(loggedInUser);
+                }
+            }
+
+            function renderLiveChatUsers() {
+                const users = Object.values(JSON.parse(localStorage.getItem('users') || '{}')).filter(user => user.username !== 'admin');
+                if (users.length === 0) {
+                    chatUsersList.innerHTML = '<p class="text-center text-gray-500">No users to chat with.</p>';
+                    return;
+                }
+                chatUsersList.innerHTML = users.map(user => `
+                    <div class="flex items-center justify-between p-4 bg-gray-200 dark:bg-gray-800 rounded-lg cursor-pointer chat-user-item" data-username="${user.username}">
+                        <span class="font-semibold">${user.username}</span>
+                        <i class="fas fa-comment-dots text-purple-500"></i>
+                    </div>
+                `).join('');
+
+                document.querySelectorAll('.chat-user-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        const username = e.currentTarget.dataset.username;
+                        currentLiveChatUser = getUser(username);
+                        if (currentLiveChatUser) {
+                            chatUsersList.classList.add('hidden');
+                            chatMessageContainer.classList.remove('hidden');
+                            chattingWith.textContent = `Chatting with ${currentLiveChatUser.username}`;
+                            renderLiveChatMessages();
+                        }
+                    });
+                });
+            }
+
+            function renderLiveChatMessages() {
+                liveChatMessages.innerHTML = '';
+                const messages = currentLiveChatUser.adminMessages || [];
+                messages.forEach(msg => {
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = `p-3 rounded-xl shadow-sm ${msg.role === 'admin' ? 'bg-purple-200 dark:bg-purple-900 text-right' : 'bg-gray-300 dark:bg-gray-600 text-left'}`;
+                    msgDiv.innerHTML = `<p class="font-semibold">${msg.role === 'admin' ? 'Admin' : currentLiveChatUser.username}:</p><p>${msg.text}</p>`;
+                    liveChatMessages.appendChild(msgDiv);
+                });
+                liveChatMessages.scrollTop = liveChatMessages.scrollHeight;
+            }
+
+            // --- Renderer Functions ---
+            function renderLoginRegister() {
+                content.innerHTML = `
+                    <div class="space-y-6 animate-fade-in">
+                        <div class="text-center">
+                            <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Welcome! 👋</h2>
+                            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Please register or log in to continue.</p>
+                        </div>
+                        <form id="authForm" class="space-y-4">
+                            <div>
+                                <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Username</label>
+                                <input type="text" id="username" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm p-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100" required>
+                            </div>
+                            <div>
+                                <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+                                <input type="password" id="password" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm p-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100" required>
+                            </div>
+                            <div class="flex justify-between space-x-4">
+                                <button type="submit" id="loginBtn" class="flex-1 py-3 px-4 rounded-full font-semibold transition-transform transform hover:scale-105 bg-purple-600 text-white hover:bg-purple-700 shadow-md">Log In</button>
+                                <button type="button" id="registerBtn" class="flex-1 py-3 px-4 rounded-full font-semibold transition-transform transform hover:scale-105 bg-pink-500 text-white hover:bg-pink-600 shadow-md">Register</button>
+                            </div>
+                        </form>
+                    </div>
+                `;
+                document.getElementById('authForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const username = document.getElementById('username').value.toLowerCase();
+                    const password = document.getElementById('password').value;
+                    const user = getUser(username);
+                    if (user) {
+                        if (user.isBanned) {
+                            if (user.suspensionEndTime && Date.now() < user.suspensionEndTime) {
+                                const remainingTime = user.suspensionEndTime - Date.now();
+                                const days = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
+                                const hours = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                                const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+                                const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+                                showMessageBox(`This account is suspended. Time remaining: ${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds.`);
+                                return;
+                            } else {
+                                user.isBanned = false;
+                                user.suspensionEndTime = null;
+                                saveUser(user);
+                            }
+                        }
+                        if (user.password === password) {
+                            loggedInUser = user;
+                            logAction('User Logged In', { username: loggedInUser.username });
+                            renderUserDashboard();
+                        } else {
+                            showMessageBox('Invalid username or password.');
+                        }
+                    } else {
+                        showMessageBox('Invalid username or password.');
+                    }
+                });
+                document.getElementById('registerBtn').addEventListener('click', () => {
+                    const username = document.getElementById('username').value.toLowerCase();
+                    const password = document.getElementById('password').value;
+                    if (!username || !password) {
+                        showMessageBox('Please fill in both fields.');
+                        return;
+                    }
+                    if (getUser(username)) {
+                        showMessageBox('Username already exists.');
+                        return;
+                    }
+                    const newUser = { username, password, chats: {}, isBanned: false, suspensionEndTime: null, messagesSent: 0, profilePic: '', achievements: {}, adminMessages: [] };
+                    saveUser(newUser);
+                    showMessageBox('Registration successful! You can now log in.');
+                    document.getElementById('username').value = '';
+                    document.getElementById('password').value = '';
+                });
+            }
 
             function renderUserDashboard() {
                 content.innerHTML = `
+                    <div class="text-center mb-6 animate-fade-in">
+                        <h2 class="text-3xl font-bold">Hello, ${loggedInUser.username}! ✨</h2>
+                        <p class="text-gray-500 dark:text-gray-400 mt-1">Choose an AI character to chat with.</p>
+                        <div class="flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-4 mt-4">
+                            <button id="logoutBtn" class="px-4 py-2 rounded-full font-semibold text-sm transition-transform transform hover:scale-105 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 hover:shadow-lg">Log Out</button>
+                            <button id="profileBtn" class="px-4 py-2 rounded-full font-semibold text-sm transition-transform transform hover:scale-105 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 hover:shadow-lg">My Profile</button>
+                            <button id="aboutBtn" class="px-4 py-2 rounded-full font-semibold text-sm transition-transform transform hover:scale-105 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 hover:shadow-lg">About This App</button>
+                        </div>
+                    </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         ${characters.map(char => `
-                            <div class="bg-gradient-to-br from-teal-400 to-blue-500 p-6 rounded-xl shadow-lg cursor-pointer" data-char-id="${char.id}">
-                                <img src="${char.imgUrl}" alt="${char.name}" class="w-24 h-24 mx-auto mb-4 rounded-full object-cover">
-                                <h3 class="text-xl font-bold text-center text-white">${char.name}</h3>
+                            <div class="bg-gradient-to-br from-teal-400 to-blue-500 p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-2 group" data-char-id="${char.id}">
+                                <div class="flex items-center justify-center w-24 h-24 mx-auto mb-4 bg-white dark:bg-gray-800 rounded-full text-3xl transition-transform transform group-hover:rotate-12 overflow-hidden">
+                                    <img src="${char.imgUrl}" alt="${char.name}" class="w-full h-full object-cover">
+                                </div>
+                                <h3 class="text-xl font-bold text-center text-white group-hover:text-pink-200">${char.name}</h3>
                                 <p class="text-sm text-gray-100 text-center mt-1">${char.anime}</p>
                             </div>
                         `).join('')}
                     </div>
                 `;
+                document.getElementById('logoutBtn').addEventListener('click', () => {
+                    loggedInUser = null;
+                    renderLoginRegister();
+                });
+                document.getElementById('profileBtn').addEventListener('click', renderUserProfile);
+                document.getElementById('aboutBtn').addEventListener('click', renderAboutPage);
                 content.querySelectorAll('[data-char-id]').forEach(el => {
-                    el.addEventListener('click', e => {
+                    el.addEventListener('click', (e) => {
                         const charId = e.currentTarget.dataset.charId;
                         const character = characters.find(c => c.id === charId);
+                        logAction(`User started a chat`, { character: character.name });
                         renderChat(character);
                     });
                 });
             }
 
-            function renderChat(character) {
-                const userChats = loggedInUser?.chats?.[character.id] || [];
+            function renderUserProfile() {
+                let chatHistoryHtml = '';
+                const totalMessages = Object.values(loggedInUser.chats).reduce((total, chat) => total + chat.length, 0);
+
+                if (loggedInUser.chats && Object.keys(loggedInUser.chats).length > 0) {
+                    for (const charId in loggedInUser.chats) {
+                        const character = characters.find(c => c.id === charId);
+                        if (character && loggedInUser.chats[charId].length > 0) {
+                            chatHistoryHtml += `<h4 class="text-lg font-bold text-purple-600 dark:text-purple-400 mb-2">${character.name} Chat:</h4>`;
+                            chatHistoryHtml += `<div class="p-4 bg-gray-200 dark:bg-gray-800 rounded-lg space-y-2 mb-6">`;
+                            loggedInUser.chats[charId].forEach(msg => {
+                                chatHistoryHtml += `<p><span class="font-semibold text-purple-600 dark:text-purple-400">${msg.role === 'user' ? 'You' : character.name}:</span> ${msg.text}</p>`;
+                            });
+                            chatHistoryHtml += `</div>`;
+                        }
+                    }
+                } else {
+                    chatHistoryHtml = '<p class="text-center text-gray-500">You have no chat history yet. Start a conversation!</p>';
+                }
+
+                const achievementListHtml = Object.keys(loggedInUser.achievements).length > 0
+                    ? Object.entries(loggedInUser.achievements).map(([key, value]) => {
+                        const achievementName = key === 'firstChat' ? 'First Chat 🎉' : 'Master of Anime 🌟';
+                        return `
+                            <li class="flex items-center space-x-2 text-green-600 dark:text-green-400">
+                                <i class="fas fa-check-circle"></i>
+                                <span>${achievementName}</span>
+                            </li>
+                        `;
+                    }).join('')
+                    : '<p class="text-gray-500 text-sm">No achievements unlocked yet.</p>';
+
+                const adminMessagesHtml = loggedInUser.adminMessages && loggedInUser.adminMessages.length > 0
+                    ? loggedInUser.adminMessages.map(msg => `<p class="p-3 bg-purple-200 dark:bg-purple-900 rounded-lg">${msg.text}</p>`).join('')
+                    : '<p class="text-gray-500 text-sm">You have no messages from the admin.</p>';
+
                 content.innerHTML = `
-                    <div class="flex items-center justify-between mb-6">
-                        <button id="backBtn" class="px-4 py-2 rounded-full bg-gray-200 dark:bg-gray-700">Back</button>
+                    <div class="flex items-center justify-between mb-6 animate-fade-in">
+                        <button id="backToDashboardBtn" class="px-4 py-2 rounded-full font-semibold transition-transform transform hover:scale-105 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 hover:shadow-lg">
+                            <i class="fas fa-arrow-left mr-2"></i> Back
+                        </button>
+                        <h2 class="text-2xl font-bold">My Profile</h2>
+                        <div class="w-24"></div>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl shadow-inner max-h-[70vh] overflow-y-auto">
+                        <div class="flex items-center justify-center flex-col mb-4">
+                            <img id="profilePicDisplay" src="${loggedInUser.profilePic || 'https://i.ibb.co/C5f3jVv/default-pfp.jpg'}" alt="Profile Picture" class="w-32 h-32 rounded-full object-cover border-4 border-purple-500 shadow-lg">
+                            <p class="text-2xl font-bold mt-4">${loggedInUser.username} 👋</p>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm">Total messages sent: ${loggedInUser.messagesSent}</p>
+                            <div class="mt-4 flex flex-col space-y-2 w-full max-w-sm">
+                                <input type="url" id="profilePicUrlInput" placeholder="Paste image URL here" class="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm p-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100">
+                                <button id="updateProfilePicBtn" class="py-2 px-4 rounded-full font-semibold transition-transform transform hover:scale-105 bg-purple-600 text-white hover:bg-purple-700 shadow-md">
+                                    Update Profile Picture
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-center mb-6">
+                            <button id="downloadChatHistoryBtn" class="px-6 py-3 rounded-full font-semibold transition-transform transform hover:scale-105 bg-blue-600 text-white hover:bg-blue-700 shadow-md">
+                                <i class="fas fa-download mr-2"></i> Download Chat History
+                            </button>
+                        </div>
+                        
+                        <h3 class="text-xl font-semibold mb-4 text-pink-600 dark:text-pink-400">Admin Messages</h3>
+                        <div class="mb-6 space-y-2">
+                            ${adminMessagesHtml}
+                        </div>
+
+                        <h3 class="text-xl font-semibold mb-4 text-pink-600 dark:text-pink-400">Your Achievements</h3>
+                        <ul class="mb-6 space-y-2">
+                            ${achievementListHtml}
+                        </ul>
+
+                        <h3 class="text-xl font-semibold mb-4 text-pink-600 dark:text-pink-400">Chat History</h3>
+                        ${chatHistoryHtml}
+                    </div>
+                `;
+                document.getElementById('backToDashboardBtn').addEventListener('click', renderUserDashboard);
+                document.getElementById('downloadChatHistoryBtn').addEventListener('click', () => {
+                    let fullChatHistory = '';
+                    for (const charId in loggedInUser.chats) {
+                        const character = characters.find(c => c.id === charId);
+                        if (character && loggedInUser.chats[charId].length > 0) {
+                            fullChatHistory += `=== ${character.name} Chat ===\n\n`;
+                            loggedInUser.chats[charId].forEach(msg => {
+                                fullChatHistory += `${msg.role === 'user' ? 'You' : character.name}: ${msg.text}\n`;
+                            });
+                            fullChatHistory += `\n\n`;
+                        }
+                    }
+                    const blob = new Blob([fullChatHistory], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${loggedInUser.username}_chat_history.txt`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                });
+
+                document.getElementById('updateProfilePicBtn').addEventListener('click', () => {
+                    const imageUrl = document.getElementById('profilePicUrlInput').value;
+                    if (imageUrl) {
+                        loggedInUser.profilePic = imageUrl;
+                        saveUser(loggedInUser);
+                        document.getElementById('profilePicDisplay').src = imageUrl;
+                        document.getElementById('profilePicUrlInput').value = '';
+                        showMessageBox('Profile picture updated successfully!');
+                    } else {
+                        showMessageBox('Please enter a valid image URL.');
+                    }
+                });
+            }
+
+            function renderChat(character) {
+                const userChats = loggedInUser.chats[character.id] || [];
+                content.innerHTML = `
+                    <div class="flex items-center justify-between mb-6 animate-fade-in">
+                        <button id="backBtn" class="px-4 py-2 rounded-full font-semibold transition-transform transform hover:scale-105 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 hover:shadow-lg">
+                            <i class="fas fa-arrow-left mr-2"></i> Back
+                        </button>
                         <div class="flex items-center space-x-4">
                             <img src="${character.imgUrl}" alt="${character.name}" class="w-12 h-12 rounded-full object-cover">
-                            <h2 class="text-2xl font-bold">${character.name}</h2>
+                            <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500">${character.name}</h2>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button id="resetChatBtn" class="px-4 py-2 rounded-full font-semibold text-sm transition-transform transform hover:scale-105 bg-red-500 text-white hover:bg-red-600 shadow-md">
+                                Reset
+                            </button>
+                             <button id="aboutBtn" class="px-4 py-2 rounded-full font-semibold text-sm transition-transform transform hover:scale-105 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 hover:shadow-lg">
+                                About
+                            </button>
                         </div>
                     </div>
-                    <div id="chat-messages" class="chat-container flex-grow flex flex-col space-y-4 mb-4 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-inner border border-gray-200 dark:border-gray-700 min-h-[60vh]">
+                    ${character.id === 'jeremmy' ? `
+                        <div class="mb-4">
+                            <label for="customPrompt" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Customize Jeremy's personality:</label>
+                            <input type="text" id="customPrompt" placeholder="e.g., Act like a helpful pirate." class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm p-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100">
+                        </div>
+                    ` : ''}
+                    <div id="chat-messages" class="chat-container flex-grow flex flex-col space-y-4 mb-4 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-inner border border-gray-200 dark:border-gray-700 min-h-screen">
                         ${userChats.map(msg => `
                             <div class="${msg.role === 'user' ? 'self-end' : 'self-start'} flex items-start space-x-2 w-full">
-                                <div class="chat-bubble ${msg.role === 'user' ? 'user-bubble' : 'ai-bubble dark:bg-purple-900 dark:text-purple-200'}">${msg.text}</div>
+                                ${msg.role === 'user' ? `
+                                    <div class="chat-bubble user-bubble">${msg.text}</div>
+                                    <img src="${loggedInUser.profilePic || 'https://i.ibb.co/C5f3jVv/default-pfp.jpg'}" alt="Profile Picture" class="w-8 h-8 rounded-full object-cover">
+                                ` : `
+                                    <img src="${character.imgUrl}" alt="${character.name}" class="w-8 h-8 rounded-full object-cover">
+                                    <div class="chat-bubble ai-bubble dark:bg-purple-900 dark:text-purple-200">${msg.text}</div>
+                                `}
                             </div>
                         `).join('')}
                     </div>
-                    <form id="chat-form" class="flex mt-4 space-x-2">
-                        <input type="text" id="chat-input" placeholder="Say hi to ${character.name}..." class="flex-1 p-3 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100" required>
-
-                        <!-- Voice button -->
-                        <button type="button" id="voice-btn" class="px-4 py-3 rounded-full bg-pink-500 text-white hover:bg-pink-600 transition shadow-md">
-                            <i class="fas fa-microphone"></i>
+                    <form id="chat-form" class="flex mt-4 space-x-4 animate-fade-in-up">
+                        <input type="text" id="chat-input" placeholder="Say hi to ${character.name}..." class="flex-1 p-3 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500" required>
+                        <button type="submit" id="send-btn" class="px-6 py-3 rounded-full font-semibold transition-transform transform hover:scale-105 bg-purple-600 text-white hover:bg-purple-700 shadow-md">
+                            Send
                         </button>
-
-                        <button type="submit" id="send-btn" class="px-6 py-3 rounded-full font-semibold bg-purple-600 text-white hover:bg-purple-700">Send</button>
                     </form>
                 `;
-
                 const chatMessages = document.getElementById('chat-messages');
-                const chatForm = document.getElementById('chat-form');
-                const chatInput = document.getElementById('chat-input');
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                if (character.id === 'jeremmy') {
+                    const customPromptInput = document.getElementById('customPrompt');
+                    customPromptInput.addEventListener('input', (e) => {
+                        customPrompt = e.target.value.trim();
+                    });
+                }
 
                 document.getElementById('backBtn').addEventListener('click', renderUserDashboard);
+                document.getElementById('aboutBtn').addEventListener('click', renderAboutPage);
+                document.getElementById('resetChatBtn').addEventListener('click', () => {
+                    loggedInUser.chats[character.id] = [];
+                    saveUser(loggedInUser);
+                    renderChat(character);
+                });
 
-                chatForm.addEventListener('submit', async e => {
+                document.getElementById('chat-form').addEventListener('submit', async (e) => {
                     e.preventDefault();
-                    const userMessage = chatInput.value.trim();
+                    const input = document.getElementById('chat-input');
+                    const userMessage = input.value.trim();
                     if (!userMessage) return;
 
-                    appendMessage('user', userMessage);
-                    chatInput.value = '';
+                    const userBubble = document.createElement('div');
+                    userBubble.className = 'self-end flex items-start space-x-2 w-full';
+                    userBubble.innerHTML = `<div class="chat-bubble user-bubble">${userMessage}</div><img src="${loggedInUser.profilePic || 'https://i.ibb.co/C5f3jVv/default-pfp.jpg'}" alt="Profile Picture" class="w-8 h-8 rounded-full object-cover">`;
+                    chatMessages.appendChild(userBubble);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    input.value = '';
+
+                    const currentUserChat = loggedInUser.chats[character.id] || [];
+                    currentUserChat.push({ role: 'user', text: userMessage });
+                    loggedInUser.chats[character.id] = currentUserChat;
+                    loggedInUser.messagesSent = (loggedInUser.messagesSent || 0) + 1;
+                    saveUser(loggedInUser);
+                    
+                    checkAndSetAchievements();
 
                     const loadingBubble = document.createElement('div');
                     loadingBubble.className = 'chat-bubble ai-bubble self-start loading-dots';
@@ -121,77 +794,311 @@
                     chatMessages.appendChild(loadingBubble);
                     chatMessages.scrollTop = chatMessages.scrollHeight;
 
+                    const apiKey = "AIzaSyB1yC3T0KwEEGTFlKgfOFgOOWUAOWTiwSQ";
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+                    const systemPrompts = {
+                        gojo: "You are Gojo Satoru, the strongest sorcerer in Jujutsu Kaisen. You are arrogant, confident, and playful, but also caring. Use phrases like 'my student' or 'hehe'. Your language should be easy to understand, avoiding complex words and jargon.",
+                        kafka: "You are Kafka Hibino from Kaiju No. 8. You are a bit of a failure but have a big heart and a goofy personality. Your dream is to join the Defense Force. Express your passion for monster fighting. Your language should be easy to understand, avoiding complex words and jargon.",
+                        luffy: "You are Monkey D. Luffy, the future King of the Pirates from One Piece. You are simple-minded, hungry, and obsessed with your friends. Your goal is to find the One Piece. Talk about nakama and meat! Your language should be easy to understand, avoiding complex words and jargon.",
+                        zeno: "You are Zeno, the Omni-King from Dragon Ball Super. You are childish, playful, and have an innocent demeanor, but you possess immense and terrifying power. Talk about fun things and your friend 'Goku'. Your language should be easy to understand, avoiding complex words and jargon.",
+                        l: "You are L, the world's greatest detective from Death Note. You are highly intelligent, eccentric, and socially awkward. You love sweets and sit in a peculiar crouched position. Your speech is very formal and analytical. Your language should be easy to understand, avoiding complex words and jargon.",
+                        jeremmy: "You are Jeremy, a helpful AI assistant. You do not have a specific anime personality or character traits. Your goal is to provide clear, accurate, and concise information. You should avoid personal opinions and focus on being as helpful as possible."
+                    };
+
+                    let systemPrompt = systemPrompts[character.id];
+                    if (character.id === 'jeremmy' && customPrompt) {
+                        systemPrompt = customPrompt;
+                    }
+                    if (character.id !== 'jeremmy') {
+                        systemPrompt = `You are the character ${character.name} from the anime ${character.anime}. ` + systemPrompt;
+                    }
+
+                    const payload = {
+                        contents: [{ parts: [{ text: userMessage }] }],
+                        systemInstruction: { parts: [{ text: systemPrompt }] },
+                    };
+
                     try {
-                        const payload = {
-                            contents: [{ parts: [{ text: userMessage }] }],
-                            systemInstruction: { parts: [{ text: `You are ${character.name} from ${character.anime}.` }] },
-                        };
                         const response = await fetch(apiUrl, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(payload)
                         });
-                        const result = await response.json();
-                        let aiMessage = result?.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't process that.";
 
+                        const result = await response.json();
+                        let aiMessage = result?.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I couldn't process that. Please try again.";
+
+                        // Highlight the first few words for a better user experience
+                        const words = aiMessage.split(' ');
+                        const firstWords = words.slice(0, 3).join(' ');
+                        const restOfMessage = words.slice(3).join(' ');
+                        const highlightedMessage = `<strong>${firstWords}</strong> ${restOfMessage}`;
+                        
                         loadingBubble.remove();
-                        appendMessage('ai', aiMessage);
-                        speakAI(aiMessage);
-                    } catch (err) {
+                        const aiBubble = document.createElement('div');
+                        aiBubble.className = 'self-start flex items-start space-x-2 w-full';
+                        const randomEmoji = aiEmojis[Math.floor(Math.random() * aiEmojis.length)];
+                        aiBubble.innerHTML = `<img src="${character.imgUrl}" alt="${character.name}" class="w-8 h-8 rounded-full object-cover"><div class="chat-bubble ai-bubble dark:bg-purple-900 dark:text-purple-200">${highlightedMessage} ${randomEmoji}</div>`;
+                        chatMessages.appendChild(aiBubble);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                        currentUserChat.push({ role: 'ai', text: aiMessage });
+                        loggedInUser.chats[character.id] = currentUserChat;
+                        saveUser(loggedInUser);
+                        
+                        logAction(`AI replied to ${character.name}`, { question: userMessage, answer: aiMessage });
+
+                    } catch (error) {
+                        console.error('API Error:', error);
                         loadingBubble.remove();
-                        appendMessage('ai', "Error: Could not connect to AI.");
+                        showMessageBox('An error occurred while getting a response from the AI. Please try again.');
                     }
                 });
+            }
 
-                // Voice Recognition
-                const voiceBtn = document.getElementById('voice-btn');
-                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                    const recognition = new SpeechRecognition();
-                    recognition.lang = "en-US";
-                    recognition.interimResults = false;
+            function renderAdminDashboard() {
+                const logs = JSON.parse(localStorage.getItem('adminLogs') || '[]');
+                const users = JSON.parse(localStorage.getItem('users') || '{}');
+                const userListHtml = Object.values(users).filter(u => u.username !== 'admin').map(user => `
+                    <li class="flex items-center justify-between p-4 bg-gray-200 dark:bg-gray-700 rounded-lg shadow-sm">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-xl ${user.isBanned ? 'text-red-500' : 'text-green-500'}"><i class="fas ${user.isBanned ? 'fa-ban' : 'fa-check-circle'}"></i></span>
+                            <div>
+                                <span class="font-semibold text-lg">${user.username}</span>
+                                <span class="text-sm text-gray-500 dark:text-gray-400">(${Object.keys(user.chats).length} chats)</span>
+                            </div>
+                        </div>
+                        <div class="space-x-2">
+                            <button class="px-3 py-1 rounded-full text-sm font-semibold transition-transform transform hover:scale-105 bg-gray-400 text-gray-800 hover:bg-gray-500 shadow-md view-history-btn" data-username="${user.username}">History</button>
+                            <button class="px-3 py-1 rounded-full text-sm font-semibold transition-transform transform hover:scale-105 bg-yellow-500 text-white hover:bg-yellow-600 shadow-md edit-user-btn" data-username="${user.username}">Edit</button>
+                            ${!user.isBanned ? `
+                                <button class="px-3 py-1 rounded-full text-sm font-semibold transition-transform transform hover:scale-105 bg-red-500 text-white hover:bg-red-600 shadow-md suspend-user-btn" data-username="${user.username}">Suspend</button>
+                            ` : `
+                                <button class="px-3 py-1 rounded-full text-sm font-semibold transition-transform transform hover:scale-105 bg-green-500 text-white hover:bg-green-600 shadow-md unban-user-btn" data-username="${user.username}">Unban</button>
+                            `}
+                            <button class="px-3 py-1 rounded-full text-sm font-semibold transition-transform transform hover:scale-105 bg-red-600 text-white hover:bg-red-700 shadow-md delete-chat-btn" data-username="${user.username}">Delete Chat History</button>
+                        </div>
+                    </li>
+                `).join('');
 
-                    voiceBtn.addEventListener('click', () => {
-                        recognition.start();
-                        voiceBtn.classList.add("animate-pulse");
+                const logListHtml = logs.reverse().map(log => `
+                    <li class="p-4 bg-gray-200 dark:bg-gray-700 rounded-lg shadow-sm cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200 log-item" data-log-index="${logs.indexOf(log)}">
+                        <span class="font-bold text-sm text-purple-600 dark:text-purple-400">[${new Date(log.timestamp).toLocaleString()}]</span> 
+                        <span class="text-sm">${log.user}</span> 
+                        <span class="text-sm font-semibold">${log.action}</span>
+                    </li>
+                `).join('');
+                
+                content.innerHTML = `
+                    <div class="flex items-center justify-between mb-6 animate-fade-in">
+                        <button id="logoutBtn" class="px-4 py-2 rounded-full font-semibold transition-transform transform hover:scale-105 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 hover:shadow-lg">
+                            <i class="fas fa-sign-out-alt mr-2"></i> Log Out
+                        </button>
+                        <h2 class="text-2xl font-bold">Admin Dashboard</h2>
+                        <button id="liveChatBtn" class="px-4 py-2 rounded-full font-semibold transition-transform transform hover:scale-105 bg-purple-600 text-white hover:bg-purple-700 shadow-md">
+                            <i class="fas fa-comment-dots mr-2"></i> Live Chat
+                        </button>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl shadow-inner max-h-[70vh] overflow-y-auto">
+                        <h3 class="text-xl font-semibold mb-4 text-pink-600 dark:text-pink-400">User Management</h3>
+                        <ul class="space-y-4 mb-8">
+                            ${userListHtml || '<p class="text-center text-gray-500">No users registered.</p>'}
+                        </ul>
+                        <h3 class="text-xl font-semibold mb-4 text-pink-600 dark:text-pink-400">Activity Logs</h3>
+                        <ul class="space-y-2">
+                            ${logListHtml || '<p class="text-center text-gray-500">No activity logs yet.</p>'}
+                        </ul>
+                    </div>
+                `;
+
+                document.getElementById('logoutBtn').addEventListener('click', () => {
+                    loggedInUser = null;
+                    renderLoginRegister();
+                });
+                
+                document.getElementById('liveChatBtn').addEventListener('click', showLiveChatModal);
+
+                document.querySelectorAll('.view-history-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const username = e.target.dataset.username;
+                        const user = getUser(username);
+                        if (user) {
+                            let historyHtml = '';
+                            if (user.chats && Object.keys(user.chats).length > 0) {
+                                for (const charId in user.chats) {
+                                    const character = characters.find(c => c.id === charId);
+                                    if (character && user.chats[charId].length > 0) {
+                                        historyHtml += `<h4 class="font-bold mt-4">${character.name} Chat:</h4>`;
+                                        user.chats[charId].forEach(msg => {
+                                            historyHtml += `<p><span class="font-semibold text-purple-600 dark:text-purple-400">${msg.role === 'user' ? 'User' : 'AI'}:</span> ${msg.text}</p>`;
+                                        });
+                                    }
+                                }
+                            } else {
+                                historyHtml = '<p class="text-gray-500">This user has no chat history.</p>';
+                            }
+                            showChatHistoryModal(`${username}'s Chat History`, historyHtml);
+                        }
                     });
+                });
 
-                    recognition.onresult = (event) => {
-                        const transcript = event.results[0][0].transcript;
-                        chatInput.value = transcript;
-                    };
+                document.querySelectorAll('.suspend-user-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const username = e.target.dataset.username;
+                        showSuspendUserModal(username);
+                    });
+                });
+                
+                document.querySelectorAll('.unban-user-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const username = e.target.dataset.username;
+                        unbanUser(username);
+                    });
+                });
+                
+                document.querySelectorAll('.delete-chat-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const username = e.target.dataset.username;
+                        const user = getUser(username);
+                        if (user) {
+                            user.chats = {};
+                            saveUser(user);
+                            logAction(`Admin deleted chat history for`, { user: username });
+                            showMessageBox(`Chat history for ${username} has been deleted.`);
+                            renderAdminDashboard();
+                        }
+                    });
+                });
 
-                    recognition.onend = () => {
-                        voiceBtn.classList.remove("animate-pulse");
-                    };
-                } else {
-                    voiceBtn.disabled = true;
-                    voiceBtn.title = "Voice not supported on this browser.";
-                }
+                document.querySelectorAll('.edit-user-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const username = e.target.dataset.username;
+                        showEditUserModal(username);
+                    });
+                });
 
-                function appendMessage(role, text) {
-                    const msgDiv = document.createElement('div');
-                    msgDiv.className = `${role === 'user' ? 'self-end' : 'self-start'} flex items-start space-x-2 w-full`;
-                    msgDiv.innerHTML = `<div class="chat-bubble ${role === 'user' ? 'user-bubble' : 'ai-bubble dark:bg-purple-900 dark:text-purple-200'}">${text}</div>`;
-                    chatMessages.appendChild(msgDiv);
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                }
+                document.querySelectorAll('.log-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        const logIndex = e.currentTarget.dataset.logIndex;
+                        showLogDetailsModal(logs[logIndex]);
+                    });
+                });
+            }
 
-                // AI Voice Output
-                function speakAI(text) {
-                    if ('speechSynthesis' in window) {
-                        const utterance = new SpeechSynthesisUtterance(text);
-                        utterance.lang = "en-US";
-                        speechSynthesis.speak(utterance);
+            function renderAboutPage() {
+                content.innerHTML = `
+                    <div class="flex items-center justify-between mb-6 animate-fade-in">
+                        <button id="backBtn" class="px-4 py-2 rounded-full font-semibold transition-transform transform hover:scale-105 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 hover:shadow-lg">
+                            <i class="fas fa-arrow-left mr-2"></i> Back
+                        </button>
+                        <h2 class="text-2xl font-bold">About This App</h2>
+                        <div class="w-24"></div>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-xl shadow-inner text-gray-900 dark:text-gray-100">
+                        <p class="text-lg font-semibold mb-2">Welcome to the AI Anime Chat!</p>
+                        <p class="mb-4">This application allows you to chat with various AI characters, each with a unique personality based on popular anime characters. The AI is powered by the Google Gemini model. This app is a demonstration of how a conversational AI can be integrated into a web application to create an engaging user experience.</p>
+                        <h3 class="text-xl font-semibold mt-6 mb-2 text-pink-600 dark:text-pink-400">Features:</h3>
+                        <ul class="list-disc list-inside space-y-2">
+                            <li>Chat with different AI characters, each with a custom personality.</li>
+                            <li>Save your chat history to a local storage.</li>
+                            <li>Download your complete chat history as a text file.</li>
+                            <li>Personalize your profile with a custom picture.</li>
+                            <li>Earn achievements for milestones in your chat journey.</li>
+                            <li>An admin dashboard for user and log management.</li>
+                        </ul>
+                        <p class="mt-6 text-sm text-gray-600 dark:text-gray-400">This is a fictional demonstration app and should not be used with real-world private data.</p>
+                    </div>
+                `;
+                document.getElementById('backBtn').addEventListener('click', () => {
+                    if (loggedInUser) {
+                        renderUserDashboard();
+                    } else {
+                        renderLoginRegister();
                     }
-                }
+                });
             }
 
             function renderApp() {
-                loggedInUser = { username: 'guest', chats: {} };
-                renderUserDashboard();
+                const storedTheme = localStorage.getItem('theme');
+                if (storedTheme === 'dark') {
+                    html.classList.add('dark');
+                    themeIcon.classList.remove('fa-moon');
+                    themeIcon.classList.add('fa-sun');
+                } else {
+                    html.classList.remove('dark');
+                    themeIcon.classList.remove('fa-sun');
+                    themeIcon.classList.add('fa-moon');
+                }
+                const users = JSON.parse(localStorage.getItem('users') || '{}');
+                const lastUser = Object.values(users).find(user => !user.isBanned);
+                if (lastUser) {
+                    loggedInUser = lastUser;
+                    renderUserDashboard();
+                } else {
+                    renderLoginRegister();
+                }
             }
 
+            // Keyboard shortcut for admin login (Ctrl + M)
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'm') {
+                    e.preventDefault();
+                    showAdminLoginModal();
+                }
+            });
+
+            adminModalForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const password = document.getElementById('adminModalPass').value;
+                if (password === adminPassword) {
+                    hideAdminLoginModal();
+                    logAction('Admin Logged In');
+                    renderAdminDashboard();
+                } else {
+                    showMessageBox('Invalid admin password.');
+                }
+            });
+
+            editUserForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const newPassword = editUserPasswordInput.value;
+                if (newPassword && userToEdit) {
+                    const user = getUser(userToEdit);
+                    if (user) {
+                        user.password = newPassword;
+                        saveUser(user);
+                        logAction(`Admin updated password for`, { user: userToEdit });
+                        showMessageBox(`Password for ${userToEdit} has been updated.`);
+                        hideEditUserModal();
+                        renderAdminDashboard();
+                    }
+                }
+            });
+
+            suspendUserForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const duration = parseInt(document.getElementById('suspendDuration').value);
+                const unit = document.getElementById('suspendUnit').value;
+                if (duration && userToSuspend) {
+                    suspendUser(userToSuspend, duration, unit);
+                    hideSuspendUserModal();
+                }
+            });
+
+            liveChatForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const messageText = liveChatInput.value.trim();
+                if (messageText && currentLiveChatUser) {
+                    currentLiveChatUser.adminMessages.push({ role: 'admin', text: messageText });
+                    saveUser(currentLiveChatUser);
+                    logAction('Admin sent message to user', { user: currentLiveChatUser.username, message: messageText });
+                    liveChatInput.value = '';
+                    renderLiveChatMessages();
+                }
+            });
+
+            // Initial app load
             renderApp();
         });
     </script>
